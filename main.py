@@ -3,7 +3,7 @@ from telegram.ext import Updater, MessageHandler, Filters
 import pyshorteners
 
 # Replace '6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI' with your actual bot token
-updater = Updater(token='YOUR_BOT_TOKEN', use_context=True)
+updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
 def shorten_links(update, context):
