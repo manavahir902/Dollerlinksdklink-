@@ -11,7 +11,7 @@ dispatcher = updater.dispatcher
 API_KEY_1 = '88c17813e37e9c8aadec0deb2ee997b544c34196'
 API_KEY_2 = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
 
-def shorten_link(url, api_key):
+def shorten_link(url, api_key, max_retries=3):
     if api_key == API_KEY_1:
         api_url = f'https://dollerlinksd.in/api?api={api_key}&url={url}'
     elif api_key == API_KEY_2:
@@ -23,29 +23,38 @@ def shorten_link(url, api_key):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
 
-    try:
-        response = requests.get(api_url, headers=headers)
-        response.raise_for_status()  # Raise an HTTPError for bad responses
+    retries = 0
+    while retries < max_retries:
+        try:
+            response = requests.get(api_url, headers=headers)
+            response.raise_for_status()  # Raise an HTTPError for bad responses
 
-        # Parse JSON response and extract the shortened URL
-        shortened_url = response.json().get('shortenedUrl', '')
+            # Parse JSON response and extract the shortened URL
+            shortened_url = response.json().get('shortenedUrl', '')
 
-        # Add a delay of 1 second to avoid rate-limiting
-        time.sleep(1)
+            return shortened_url
+        except requests.exceptions.HTTPError as errh:
+            print("HTTP Error:", errh)
+        except requests.exceptions.ConnectionError as errc:
+            print("Error Connecting:", errc)
+        except requests.exceptions.Timeout as errt:
+            print("Timeout Error:", errt)
+        except requests.exceptions.RequestException as err:
+            print("Something went wrong:", err)
 
-        return shortened_url
-    except requests.exceptions.HTTPError as errh:
-        print("HTTP Error:", errh)
-        return None
-    except requests.exceptions.ConnectionError as errc:
-        print("Error Connecting:", errc)
-        return None
-    except requests.exceptions.Timeout as errt:
-        print("Timeout Error:", errt)
-        return None
-    except requests.exceptions.RequestException as err:
-        print("Something went wrong:", err)
-        return None
+        # Increment retries and wait exponentially
+        retries += 1
+        wait_time = 2**retries
+        print(f"Retrying in {wait_time} seconds...")
+        time.sleep(wait_time)
+
+    print("Max retries reached. Unable to shorten the link.")
+    return None
+
+# Rest of the code remains unchanged...
+
+
+
 
 def handle_links(update, context):
     chat_id = update.effective_chat.id
