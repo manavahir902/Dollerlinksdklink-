@@ -42,18 +42,24 @@ def handle_links(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
 
-    # Extract links from the message
-    links = [word for word in message_text.split() if 'http' in word]
+    # Extract links and captions from the message
+    links_with_captions = [(word, update.message.caption) for word in message_text.split() if 'http' in word]
 
-    if links:
+    if links_with_captions:
         shortened_links = []
 
         # Shorten each link individually
-        for link in links:
+        for link, caption in links_with_captions:
             shortened_link = shorten_link(link)
-            
+
             if shortened_link:
-                shortened_links.append(shortened_link)
+                # If a caption exists, append it to the shortened link
+                if caption:
+                    shortened_link_with_caption = f"{shortened_link} - {caption}"
+                else:
+                    shortened_link_with_caption = shortened_link
+
+                shortened_links.append(shortened_link_with_caption)
 
         if shortened_links:
             # Reply with the list of shortened links
@@ -70,7 +76,7 @@ def handle_links(update, context):
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
 dispatcher.add_handler(link_handler)
 
-
+# Rest of the code remains unchanged...
 
 # Start the bot
 updater.start_polling()
