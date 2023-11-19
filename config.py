@@ -6,6 +6,7 @@ load_dotenv()
 
 
 # Mandatory variables for the bot to start
+CHANNEL_LINK= os.environ.get("CHANEEL_LINK", "t.me/manav8283")
 SHORTNER_LINK = os.environ.get("SHORTNER_LINK", "dollerlinksd.in")
 API_ID = int(os.environ.get("API_ID", "25560475")) #API ID from https://my.telegram.org/auth
 API_HASH = os.environ.get("API_HASH", "aea0e5af4198ac18ce7c7c0feb9663cf") #API Hash from https://my.telegram.org/auth
