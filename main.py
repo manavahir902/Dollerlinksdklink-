@@ -3,60 +3,102 @@ from telegram.ext import Updater, MessageHandler, Filters
 import requests
 import os
 
-# Replace 'YOUR_BOT_TOKEN' and 'YOUR_API_KEY' with your actual bot token and API key
-bot_token = '6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI'
-api_key = '88c17813e37e9c8aadec0deb2ee997b544c34196'
+# Replace 'YOUR_BOT_TOKEN' with your actual bot token
+updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
+dispatcher = updater.dispatcher
 
-REQUEST_DELAY = 2
+# Replace 'YOUR_API_KEY' with your actual API key from dollerlinksd.in
+API_KEY = '88c17813e37e9c8aadec0deb2ee997b544c34196'
 
-def shorten_link(url, api_key):
-    api_url = f'https://dollerlinksd.in/api?api={api_key}&url={url}'
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+def shorten_link(url):
+    api_url = f'https://dollerlinksd.in/api?api={API_KEY}&url={url}'
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
 
     try:
         response = requests.get(api_url, headers=headers)
         response.raise_for_status()  # Raise an HTTPError for bad responses
+
+        # Parse JSON response and extract the shortened URL
         shortened_url = response.json().get('shortenedUrl', '')
+
         return shortened_url
+    except requests.exceptions.HTTPError as errh:
+        print("HTTP Error:", errh)
+        return None
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+        return None
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+        return None
     except requests.exceptions.RequestException as err:
-        print(f"Error shortening link: {err}")
+        print("Something went wrong:", err)
         return None
 
-def handle_messages(update, context):
+def handle_links(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
-    photo_caption = update.message.caption
 
-    # Process links in the text message
-    links_in_text = [word for word in message_text.split() if 'http' in word]
-    process_links(chat_id, context.bot, links_in_text, message_text)
+    # Extract links and captions from the message
+    links_with_captions = [(word, update.message.caption) for word in message_text.split() if 'http' in word]
 
-    # Process links in the photo caption
-    if photo_caption:
-        links_in_caption = [word for word in photo_caption.split() if 'http' in word]
-        process_links(chat_id, context.bot, links_in_caption, photo_caption)
+    if links_with_captions:
+        updated_message = message_text
 
-def process_links(chat_id, bot, links, original_text):
-    if links:
-        updated_text = original_text
-
-        for link in links:
-            shortened_link = shorten_link(link, api_key)
+        # Shorten each link and replace in the message
+        for link, caption in links_with_captions:
+            shortened_link = shorten_link(link)
 
             if shortened_link:
-                updated_text = updated_text.replace(link, f"[{shortened_link}]({shortened_link})")
+                # If a caption exists, append it to the shortened link
+                if caption:
+                    shortened_link_with_caption = f"{shortened_link} - {caption}"
+                else:
+                    shortened_link_with_caption = shortened_link
 
-        bot.send_message(chat_id=chat_id, text=updated_text, parse_mode=telegram.ParseMode.MARKDOWN)
+                # Replace the old link with the shortened link in the message
+                updated_message = updated_message.replace(link, shortened_link_with_caption)
 
-def main():
-    updater = Updater(token=bot_token, use_context=True)
-    dispatcher = updater.dispatcher
+        # Reply with the updated message
+        context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
+    else:
+        # Reply with a default response if no links are found
+        context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
 
-    message_handler = MessageHandler(Filters.all & ~Filters.command, handle_messages)
-    dispatcher.add_handler(message_handler)
+def handle_photos(update, context):
+    chat_id = update.effective_chat.id
+    photo_caption = update.message.caption
+    photo_file_id = update.message.photo[-1].file_id
 
-    updater.start_polling()
-    updater.idle()
+    # Process links in the photo caption
+    links_in_caption = [word for word in photo_caption.split() if 'http' in word]
 
-if __name__ == "__main__":
-    main()
+    if links_in_caption:
+        updated_caption = photo_caption
+
+        # Shorten each link and replace in the caption
+        for link in links_in_caption:
+            shortened_link = shorten_link(link)
+
+            if shortened_link:
+                updated_caption = updated_caption.replace(link, f"[{shortened_link}]({shortened_link})")
+
+        # Reply with the updated photo and its caption
+        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=updated_caption, parse_mode=telegram.ParseMode.MARKDOWN)
+    else:
+        # Reply with the original photo and its caption
+        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption, parse_mode=telegram.ParseMode.MARKDOWN)
+
+# Register the handlers
+link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
+dispatcher.add_handler(link_handler)
+
+photo_handler = MessageHandler(Filters.photo, handle_photos)
+dispatcher.add_handler(photo_handler)
+
+# Start the bot
+updater.start_polling()
+updater.idle()
