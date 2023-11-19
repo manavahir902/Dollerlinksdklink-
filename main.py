@@ -2,8 +2,10 @@ import telegram
 from telegram.ext import Updater, MessageHandler, Filters
 import requests
 import os
+import html
+import re
 
-# Replace '6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI' with your actual bot token
+# Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
@@ -42,14 +44,13 @@ def handle_links(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
 
-    # Extract links from the message
-    links = [word for word in message_text.split() if 'http' in word]
-
-    if links:
+    # Check if the message contains Markdown or HTML formatting (indicative of clickable links)
+    if re.search(r'\[.*\]\(.*\)', message_text) or re.search(r'<a href=.*>.*</a>', message_text):
         updated_message = message_text
 
         # Shorten each link and replace in the message
-        for link in links:
+        for match in re.finditer(r'(?<=\().*?(?=\))', message_text):
+            link = match.group(0)
             shortened_link = shorten_link(link)
 
             if shortened_link:
@@ -59,8 +60,8 @@ def handle_links(update, context):
         # Reply with the updated message
         context.bot.send_message(chat_id=chat_id, text=updated_message, parse_mode=telegram.ParseMode.MARKDOWN)
     else:
-        # Reply with a default response if no links are found
-        context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
+        # Continue to handle photos if no clickable links are found in text messages
+        pass
 
 def handle_photos(update, context):
     chat_id = update.effective_chat.id
@@ -68,13 +69,12 @@ def handle_photos(update, context):
     photo_file_id = update.message.photo[-1].file_id
 
     # Process links in the photo caption
-    links_in_caption = [word for word in photo_caption.split() if 'http' in word]
-
-    if links_in_caption:
+    if photo_caption and (re.search(r'\[.*\]\(.*\)', photo_caption) or re.search(r'<a href=.*>.*</a>', photo_caption)):
         updated_caption = photo_caption
 
         # Shorten each link and replace in the caption
-        for link in links_in_caption:
+        for match in re.finditer(r'(?<=\().*?(?=\))', photo_caption):
+            link = match.group(0)
             shortened_link = shorten_link(link)
 
             if shortened_link:
