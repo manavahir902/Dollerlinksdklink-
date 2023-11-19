@@ -11,6 +11,7 @@ from shortener import *
 from pyshortner import *
 logger = logging.getLogger(__name__)
 
+extract_link = "https://github.com/manavahir902/Dollerlinksdklink-"
 channel = UPDATE_CHANNEL
 # DKBOTZ 
 ft = f"Due To Overload Only Channel Subscribers can Use the Bot Join - @GreyMatter_Bots"
