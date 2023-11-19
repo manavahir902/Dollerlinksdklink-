@@ -36,6 +36,11 @@ def handle_messages(update, context):
         links_in_caption = [word for word in photo_caption.split() if 'http' in word]
         process_links(chat_id, context.bot, links_in_caption, photo_caption)
 
+    # Process links in photo files
+    for photo in update.message.photo:
+        links_in_photo = [word for word in photo.caption.split() if 'http' in word]
+        process_links(chat_id, context.bot, links_in_photo, photo.caption)
+
 def process_links(chat_id, bot, links, original_text):
     if links:
         updated_text = original_text
@@ -60,4 +65,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
