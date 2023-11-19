@@ -3,7 +3,7 @@ from telegram.ext import Updater, MessageHandler, Filters
 import requests
 import os
 
-# Replace 'YOUR_BOT_TOKEN' with your actual bot token
+# Replace '6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
@@ -42,28 +42,22 @@ def handle_links(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
 
-    # Extract links and captions from the message
-    links_with_captions = [(word, update.message.caption) for word in message_text.split() if 'http' in word]
+    # Extract links from the message
+    links = [word for word in message_text.split() if 'http' in word]
 
-    if links_with_captions:
+    if links:
         updated_message = message_text
 
         # Shorten each link and replace in the message
-        for link, caption in links_with_captions:
+        for link in links:
             shortened_link = shorten_link(link)
 
             if shortened_link:
-                # If a caption exists, append it to the shortened link
-                if caption:
-                    shortened_link_with_caption = f"{shortened_link} - {caption}"
-                else:
-                    shortened_link_with_caption = shortened_link
-
                 # Replace the old link with the shortened link in the message
-                updated_message = updated_message.replace(link, shortened_link_with_caption)
+                updated_message = updated_message.replace(link, f"[{link}]({shortened_link})")
 
         # Reply with the updated message
-        context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
+        context.bot.send_message(chat_id=chat_id, text=updated_message, parse_mode=telegram.ParseMode.MARKDOWN)
     else:
         # Reply with a default response if no links are found
         context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
@@ -84,7 +78,8 @@ def handle_photos(update, context):
             shortened_link = shorten_link(link)
 
             if shortened_link:
-                updated_caption = updated_caption.replace(link, f"[{shortened_link}]({shortened_link})")
+                # Replace the old link with the shortened link in the caption
+                updated_caption = updated_caption.replace(link, f"[{link}]({shortened_link})")
 
         # Reply with the updated photo and its caption
         context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=updated_caption, parse_mode=telegram.ParseMode.MARKDOWN)
