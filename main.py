@@ -3,7 +3,6 @@ from telegram.ext import Updater, MessageHandler, Filters
 import requests
 import os
 import html
-import re
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
@@ -40,59 +39,41 @@ def shorten_link(url):
         print("Something went wrong:", err)
         return None
 
-def handle_links(update, context):
+def handle_messages(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
+    photo_caption = update.message.caption
 
-    # Check if the message contains Markdown or HTML formatting (indicative of clickable links)
-    if re.search(r'\[.*\]\(.*\)', message_text) or re.search(r'<a href=.*>.*</a>', message_text):
+    # Check if the message contains clickable links
+    if 'http' in message_text:
         updated_message = message_text
 
         # Shorten each link and replace in the message
-        for match in re.finditer(r'(?<=\().*?(?=\))', message_text):
-            link = match.group(0)
-            shortened_link = shorten_link(link)
-
-            if shortened_link:
-                # Replace the old link with the shortened link in the message
-                updated_message = updated_message.replace(link, f"[{link}]({shortened_link})")
+        for word in message_text.split():
+            if 'http' in word:
+                shortened_link = shorten_link(word)
+                if shortened_link:
+                    updated_message = updated_message.replace(word, f"[{word}]({shortened_link})")
 
         # Reply with the updated message
         context.bot.send_message(chat_id=chat_id, text=updated_message, parse_mode=telegram.ParseMode.MARKDOWN)
-    else:
-        # Continue to handle photos if no clickable links are found in text messages
-        pass
-
-def handle_photos(update, context):
-    chat_id = update.effective_chat.id
-    photo_caption = update.message.caption
-    photo_file_id = update.message.photo[-1].file_id
-
-    # Process links in the photo caption
-    if photo_caption and (re.search(r'\[.*\]\(.*\)', photo_caption) or re.search(r'<a href=.*>.*</a>', photo_caption)):
+    elif photo_caption and 'http' in photo_caption:
+        # Process links in the photo caption
         updated_caption = photo_caption
 
         # Shorten each link and replace in the caption
-        for match in re.finditer(r'(?<=\().*?(?=\))', photo_caption):
-            link = match.group(0)
-            shortened_link = shorten_link(link)
-
-            if shortened_link:
-                # Replace the old link with the shortened link in the caption
-                updated_caption = updated_caption.replace(link, f"[{link}]({shortened_link})")
+        for word in photo_caption.split():
+            if 'http' in word:
+                shortened_link = shorten_link(word)
+                if shortened_link:
+                    updated_caption = updated_caption.replace(word, f"[{word}]({shortened_link})")
 
         # Reply with the updated photo and its caption
-        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=updated_caption, parse_mode=telegram.ParseMode.MARKDOWN)
-    else:
-        # Reply with the original photo and its caption
-        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption, parse_mode=telegram.ParseMode.MARKDOWN)
+        context.bot.send_photo(chat_id=chat_id, photo=update.message.photo[-1].file_id, caption=updated_caption, parse_mode=telegram.ParseMode.MARKDOWN)
 
-# Register the handlers
-link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
-dispatcher.add_handler(link_handler)
-
-photo_handler = MessageHandler(Filters.photo, handle_photos)
-dispatcher.add_handler(photo_handler)
+# Register the handler
+message_handler = MessageHandler(Filters.text | Filters.photo, handle_messages)
+dispatcher.add_handler(message_handler)
 
 # Start the bot
 updater.start_polling()
