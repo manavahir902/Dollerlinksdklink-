@@ -46,9 +46,9 @@ def handle_links(update, context):
     links_with_captions = [(word, update.message.caption) for word in message_text.split() if 'http' in word]
 
     if links_with_captions:
-        shortened_links = []
+        updated_message = message_text
 
-        # Shorten each link individually
+        # Shorten each link and replace in the message
         for link, caption in links_with_captions:
             shortened_link = shorten_link(link)
 
@@ -59,15 +59,11 @@ def handle_links(update, context):
                 else:
                     shortened_link_with_caption = shortened_link
 
-                shortened_links.append(shortened_link_with_caption)
+                # Replace the old link with the shortened link in the message
+                updated_message = updated_message.replace(link, shortened_link_with_caption)
 
-        if shortened_links:
-            # Reply with the list of shortened links
-            reply_text = "\n".join(shortened_links)
-            context.bot.send_message(chat_id=chat_id, text=f"Shortened links:\n{reply_text}")
-        else:
-            # Handle error if link shortening fails for all links
-            context.bot.send_message(chat_id=chat_id, text="Failed to shorten the links. Please try again.")
+        # Reply with the updated message
+        context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
     else:
         # Reply with a default response if no links are found
         context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
@@ -77,6 +73,8 @@ link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
 dispatcher.add_handler(link_handler)
 
 # Rest of the code remains unchanged...
+
+
 
 # Start the bot
 updater.start_polling()
