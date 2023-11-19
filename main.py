@@ -14,7 +14,7 @@ def shorten_link(url, api_key):
     if api_key == API_KEY_1:
         api_url = f'https://dollerlinksd.in/api?api={api_key}&url={url}'
     elif api_key == API_KEY_2:
-        api_url = f'https://adsfly.in/api?key={api_key}&url={url}'
+        api_url = f'https://adsfly.in/api?api={api_key}&url={url}'
     else:
         return None
 
