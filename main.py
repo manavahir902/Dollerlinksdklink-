@@ -2,15 +2,21 @@ import telegram
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
 
-# Replace 'YOUR_BOT_TOKEN' with your actual bot token
+# Replace '6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
-# Replace 'YOUR_API_KEY' with your actual API key from dollerlinksd.in
-API_KEY = '88c17813e37e9c8aadec0deb2ee997b544c34196'
+# Replace 'YOUR_API_KEY_1' and 'YOUR_API_KEY_2' with your actual API keys from the two URL shorteners
+API_KEY_1 = '88c17813e37e9c8aadec0deb2ee997b544c34196'
+API_KEY_2 = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
 
-def shorten_link(url):
-    api_url = f'https://dollerlinksd.in/api?api={API_KEY}&url={url}'
+def shorten_link(url, api_key):
+    if api_key == API_KEY_1:
+        api_url = f'https://dollerlinksd.in/api?api={api_key}&url={url}'
+    elif api_key == API_KEY_2:
+        api_url = f'https://adsfly.in/api?key={api_key}&url={url}'
+    else:
+        return None
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -47,19 +53,22 @@ def handle_links(update, context):
     if links_with_captions:
         updated_message = message_text
 
-        # Shorten each link and replace in the message
+        # Shorten each link from both services and replace in the message
         for link, caption in links_with_captions:
-            shortened_link = shorten_link(link)
+            shortened_link_1 = shorten_link(link, API_KEY_1)
+            shortened_link_2 = shorten_link(link, API_KEY_2)
 
-            if shortened_link:
-                # If a caption exists, append it to the shortened link
+            if shortened_link_1 and shortened_link_2:
+                # If a caption exists, append it to the shortened links
                 if caption:
-                    shortened_link_with_caption = f"{shortened_link} - {caption}"
+                    shortened_link_with_caption_1 = f"{shortened_link_1} - {caption}"
+                    shortened_link_with_caption_2 = f"{shortened_link_2} - {caption}"
                 else:
-                    shortened_link_with_caption = shortened_link
+                    shortened_link_with_caption_1 = shortened_link_1
+                    shortened_link_with_caption_2 = shortened_link_2
 
-                # Replace the old link with the shortened link in the message
-                updated_message = updated_message.replace(link, shortened_link_with_caption)
+                # Replace the old link with the shortened links in the message
+                updated_message = updated_message.replace(link, f"{shortened_link_with_caption_1} {shortened_link_with_caption_2}")
 
         # Reply with the updated message
         context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
@@ -67,34 +76,9 @@ def handle_links(update, context):
         # Reply with a default response if no links are found
         context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
 
-def handle_photos(update, context):
-    chat_id = update.effective_chat.id
-    photo_caption = update.message.caption
-    photo_file_id = update.message.photo[-1].file_id
-
-    # Extract links from the caption
-    links_in_caption = [word for word in photo_caption.split() if 'http' in word]
-
-    if links_in_caption:
-        # Shorten each link in the caption
-        shortened_links = [shorten_link(link) for link in links_in_caption]
-
-        # Replace the old links with the shortened links in the caption
-        for old_link, shortened_link in zip(links_in_caption, shortened_links):
-            photo_caption = photo_caption.replace(old_link, shortened_link)
-
-        # Reply with the photo and the updated caption with shortened links
-        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
-    else:
-        # Reply with the original photo and caption if no links are found
-        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
-
-# Register the handlers
+# Register the link handler
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
 dispatcher.add_handler(link_handler)
-
-photo_handler = MessageHandler(Filters.photo, handle_photos)
-dispatcher.add_handler(photo_handler)
 
 # Start the bot
 updater.start_polling()
