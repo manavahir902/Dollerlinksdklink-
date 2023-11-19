@@ -1,7 +1,6 @@
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
-import time
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
@@ -41,16 +40,9 @@ def shorten_link(url):
 def handle_links(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
-    photo_caption = update.message.caption
-    photo_file_id = None
-
-    # Check if the message has an attached photo
-    if update.message.photo:
-        # Get the highest resolution photo file ID
-        photo_file_id = update.message.photo[-1].file_id
 
     # Extract links and captions from the message
-    links_with_captions = [(word, photo_caption) for word in message_text.split() if 'http' in word]
+    links_with_captions = [(word, update.message.caption) for word in message_text.split() if 'http' in word]
 
     if links_with_captions:
         updated_message = message_text
@@ -69,22 +61,27 @@ def handle_links(update, context):
                 # Replace the old link with the shortened link in the message
                 updated_message = updated_message.replace(link, shortened_link_with_caption)
 
-        # Reply with the updated message and the attached photo
-        if photo_file_id:
-            context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
+        # Reply with the updated message
         context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
     else:
         # Reply with a default response if no links are found
         context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
 
-# Register the link handler
+def handle_photos(update, context):
+    chat_id = update.effective_chat.id
+    photo_caption = update.message.caption
+    photo_file_id = update.message.photo[-1].file_id
+
+    # Reply with the photo and its caption
+    context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
+
+# Register the handlers
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
 dispatcher.add_handler(link_handler)
 
-# Rest of the code remains unchanged..
-
+photo_handler = MessageHandler(Filters.photo, handle_photos)
+dispatcher.add_handler(photo_handler)
 
 # Start the bot
 updater.start_polling()
 updater.idle()
-
