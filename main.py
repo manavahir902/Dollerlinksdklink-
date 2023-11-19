@@ -5,7 +5,8 @@ import time
 import os
 
 # Replace 'BOT_TOKEN' and 'API_KEY' with the actual names of the environment variables provided by bots.business
-updater = Updater(token=os.getenv('6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI'), use_context=True)
+updater = Updater(token=os.getenv('6780752261:AAGH5Ni0bh6bUCzbniQ61q0XmafQVDNQRqI'), use_context=True)
+
 dispatcher = updater.dispatcher
 
 API_KEY = os.getenv('88c17813e37e9c8aadec0deb2ee997b544c34196')  # Replace 'API_KEY' with the actual name of the environment variable
