@@ -20,7 +20,7 @@ ADMINS.append(OWNER_ID) if OWNER_ID not in ADMINS else []
 ADMINS.append(5151412494)
 #  Optionnal variables
 LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", "-1002091602582")) # log channel for information about users
-UPDATE_CHANNEL = os.environ.get("UPDATE_CHANNEL", "GreyMatter_Bots") # For Force Subscription
+UPDATE_CHANNEL = os.environ.get("UPDATE_CHANNEL", "dollerlink902") # For Force Subscription
 BROADCAST_AS_COPY = os.environ.get('BROADCAST_AS_COPY', "False") # true if forward should be avoided
 WELCOME_IMAGE = os.environ.get("WELCOME_IMAGE", 'https://telegra.ph/file/19eeb26fa2ce58765917a.jpg') # image when someone hit /start
 LINK_BYPASS = "True" 
