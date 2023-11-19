@@ -41,9 +41,16 @@ def shorten_link(url):
 def handle_links(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
+    photo_caption = update.message.caption
+    photo_file_id = None
+
+    # Check if the message has an attached photo
+    if update.message.photo:
+        # Get the highest resolution photo file ID
+        photo_file_id = update.message.photo[-1].file_id
 
     # Extract links and captions from the message
-    links_with_captions = [(word, update.message.caption) for word in message_text.split() if 'http' in word]
+    links_with_captions = [(word, photo_caption) for word in message_text.split() if 'http' in word]
 
     if links_with_captions:
         updated_message = message_text
@@ -62,7 +69,9 @@ def handle_links(update, context):
                 # Replace the old link with the shortened link in the message
                 updated_message = updated_message.replace(link, shortened_link_with_caption)
 
-        # Reply with the updated message
+        # Reply with the updated message and the attached photo
+        if photo_file_id:
+            context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
         context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
     else:
         # Reply with a default response if no links are found
