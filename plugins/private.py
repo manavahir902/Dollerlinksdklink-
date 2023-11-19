@@ -47,11 +47,7 @@ async def private_link_handler(c: Client, message: Message):
             return
         user_method = user["method"]
 
-        vld = await user_api_check(user)
-
-        if vld is not True:
-
-            return await message.reply_text(vld)
+        
         try:
             txt = await message.reply('`Converting.......`', quote=True)
 
