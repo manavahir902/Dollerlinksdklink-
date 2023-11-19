@@ -72,8 +72,22 @@ def handle_photos(update, context):
     photo_caption = update.message.caption
     photo_file_id = update.message.photo[-1].file_id
 
-    # Reply with the photo and its caption
-    context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
+    # Extract links from the caption
+    links_in_caption = [word for word in photo_caption.split() if 'http' in word]
+
+    if links_in_caption:
+        # Shorten each link in the caption
+        shortened_links = [shorten_link(link) for link in links_in_caption]
+
+        # Replace the old links with the shortened links in the caption
+        for old_link, shortened_link in zip(links_in_caption, shortened_links):
+            photo_caption = photo_caption.replace(old_link, shortened_link)
+
+        # Reply with the photo and the updated caption with shortened links
+        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
+    else:
+        # Reply with the original photo and caption if no links are found
+        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
 
 # Register the handlers
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
