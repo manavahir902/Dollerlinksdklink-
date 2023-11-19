@@ -13,22 +13,29 @@ API_KEY = '88c17813e37e9c8aadec0deb2ee997b544c34196'
 def shorten_link(url):
     api_url = f'https://dollerlinksd.in/api?api={API_KEY}&url={url}'
 
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+
     try:
-        response = requests.get(api_url)
+        response = requests.get(api_url, headers=headers)
         response.raise_for_status()  # Raise an HTTPError for bad responses
         return response.text
     except requests.exceptions.HTTPError as errh:
-        print ("HTTP Error:",errh)
+        print("HTTP Error:", errh)
         return None
     except requests.exceptions.ConnectionError as errc:
-        print ("Error Connecting:",errc)
+        print("Error Connecting:", errc)
         return None
     except requests.exceptions.Timeout as errt:
-        print ("Timeout Error:",errt)
+        print("Timeout Error:", errt)
         return None
     except requests.exceptions.RequestException as err:
-        print ("Something went wrong:",err)
+        print("Something went wrong:", err)
         return None
+
+# Rest of the code remains unchanged...
+
 
 def start(update, context):
     chat_id = update.effective_chat.id
