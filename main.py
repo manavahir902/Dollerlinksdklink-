@@ -2,7 +2,7 @@ import telegram
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
-updater = Updater(token='YOUR_BOT_TOKEN', use_context=True)
+updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
 def echo(update, context):
