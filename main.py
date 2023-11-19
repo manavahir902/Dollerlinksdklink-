@@ -47,22 +47,26 @@ def handle_links(update, context):
     if links_with_captions:
         updated_message = message_text
 
-        # Shorten each link and replace in the message
+        # Shorten each link from both services and replace in the message
         for link, caption in links_with_captions:
-            shortened_link = shorten_link(link)
+            shortened_link_1 = shorten_link(link, API_KEY_1)
+            time.sleep(REQUEST_DELAY)  # Global delay between requests
+            shortened_link_2 = shorten_link(link, API_KEY_2)
 
-            if shortened_link:
-                # If a caption exists, append it to the shortened link
+            if shortened_link_1 and shortened_link_2:
+                # If a caption exists, append it to the shortened links
                 if caption:
-                    shortened_link_with_caption = f"{shortened_link} - {caption}"
+                    shortened_link_with_caption_1 = f"{shortened_link_1} - {caption}"
+                    shortened_link_with_caption_2 = f"{shortened_link_2} - {caption}"
                 else:
-                    shortened_link_with_caption = shortened_link
+                    shortened_link_with_caption_1 = shortened_link_1
+                    shortened_link_with_caption_2 = shortened_link_2
 
-                # Replace the old link with the shortened link in the message
-                updated_message = updated_message.replace(link, shortened_link_with_caption)
+                # Replace the old link with the shortened links in the message
+                updated_message = updated_message.replace(link, f"{shortened_link_with_caption_1} {shortened_link_with_caption_2}")
 
         # Reply with the updated message
-        context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
+        context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}", parse_mode=telegram.ParseMode.MARKDOWN)
     else:
         # Reply with a default response if no links are found
         context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
@@ -77,17 +81,19 @@ def handle_photos(update, context):
 
     if links_in_caption:
         # Shorten each link in the caption
-        shortened_links = [shorten_link(link) for link in links_in_caption]
+        shortened_links = [shorten_link(link, API_KEY_1) for link in links_in_caption]
+        time.sleep(REQUEST_DELAY)  # Global delay between requests
 
         # Replace the old links with the shortened links in the caption
         for old_link, shortened_link in zip(links_in_caption, shortened_links):
-            photo_caption = photo_caption.replace(old_link, shortened_link)
+            photo_caption = photo_caption.replace(old_link, f"[{shortened_link}]({shortened_link})")
 
         # Reply with the photo and the updated caption with shortened links
-        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
+        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption, parse_mode=telegram.ParseMode.MARKDOWN)
     else:
         # Reply with the original photo and caption if no links are found
-        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
+        context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption, parse_mode=telegram.ParseMode.MARKDOWN)
+
 
 # Register the handlers
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
