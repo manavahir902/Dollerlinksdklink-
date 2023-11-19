@@ -1,25 +1,20 @@
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters
-import pyshorteners
 
-# Replace '6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI' with your actual bot token
-updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
+# Replace 'YOUR_BOT_TOKEN' with your actual bot token
+updater = Updater(token='YOUR_BOT_TOKEN', use_context=True)
 dispatcher = updater.dispatcher
 
-def shorten_links(update, context):
+def echo(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
-    shortener = pyshorteners.Shortener()
 
-    # Replace links in the message with shortened links
-    shortened_message = ' '.join(shortener.short(link) if link.startswith('http') else link for link in message_text.split())
-
-    # Send the updated message
-    context.bot.send_message(chat_id=chat_id, text=shortened_message)
+    # Reply with the same message
+    context.bot.send_message(chat_id=chat_id, text=message_text)
 
 # Register the handler
-link_handler = MessageHandler(Filters.text & ~Filters.command, shorten_links)
-dispatcher.add_handler(link_handler)
+echo_handler = MessageHandler(Filters.text & ~Filters.command, echo)
+dispatcher.add_handler(echo_handler)
 
 # Start the bot
 updater.start_polling()
