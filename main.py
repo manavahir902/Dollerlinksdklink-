@@ -1,20 +1,33 @@
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
+import time
 
-# Replace '6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI' with your actual bot token
+# Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
-def shorten_link(url):
-    # Replace 'YOUR_API_KEY' with your actual API key from dollerlinksd.in
-    api_key = '88c17813e37e9c8aadec0deb2ee997b544c34196'
-    api_url = f'https://dollerlinksd.in/api?api={api_key}&url={url}'
+# Replace 'YOUR_API_KEY' with your actual API key from dollerlinksd.in
+API_KEY = '88c17813e37e9c8aadec0deb2ee997b544c34196'
 
-    response = requests.get(api_url)
-    if response.status_code == 200:
+def shorten_link(url):
+    api_url = f'https://dollerlinksd.in/api?api={API_KEY}&url={url}'
+
+    try:
+        response = requests.get(api_url)
+        response.raise_for_status()  # Raise an HTTPError for bad responses
         return response.text
-    else:
+    except requests.exceptions.HTTPError as errh:
+        print ("HTTP Error:",errh)
+        return None
+    except requests.exceptions.ConnectionError as errc:
+        print ("Error Connecting:",errc)
+        return None
+    except requests.exceptions.Timeout as errt:
+        print ("Timeout Error:",errt)
+        return None
+    except requests.exceptions.RequestException as err:
+        print ("Something went wrong:",err)
         return None
 
 def start(update, context):
