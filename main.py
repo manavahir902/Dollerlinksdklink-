@@ -3,7 +3,7 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
 import time
 
-# Replace '6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI' with your actual bot token
+# Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
@@ -38,40 +38,39 @@ def shorten_link(url):
         print("Something went wrong:", err)
         return None
 
-# Rest of the code remains unchanged...
-
-def start(update, context):
-    chat_id = update.effective_chat.id
-
-    # Send a welcome message
-    context.bot.send_message(chat_id=chat_id, text="Hello! I'm your link shortening bot. Send me a link, and I'll shorten it for you.")
-
-# Register the start command handler
-start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
-
 def handle_links(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
 
-    # Check if the message contains a link
-    if 'http' in message_text:
-        # Shorten the link using dollerlinksd.in
-        shortened_link = shorten_link(message_text)
+    # Extract links from the message
+    links = [word for word in message_text.split() if 'http' in word]
 
-        if shortened_link:
-            # Reply with the shortened link
-            context.bot.send_message(chat_id=chat_id, text=f"Shortened link: {shortened_link}")
+    if links:
+        shortened_links = []
+
+        # Shorten each link individually
+        for link in links:
+            shortened_link = shorten_link(link)
+            
+            if shortened_link:
+                shortened_links.append(shortened_link)
+
+        if shortened_links:
+            # Reply with the list of shortened links
+            reply_text = "\n".join(shortened_links)
+            context.bot.send_message(chat_id=chat_id, text=f"Shortened links:\n{reply_text}")
         else:
-            # Handle error if link shortening fails
-            context.bot.send_message(chat_id=chat_id, text="Failed to shorten the link. Please try again.")
+            # Handle error if link shortening fails for all links
+            context.bot.send_message(chat_id=chat_id, text="Failed to shorten the links. Please try again.")
     else:
-        # Reply with a default response if no link is found
-        context.bot.send_message(chat_id=chat_id, text="Hello! If you send a link, I'll try to shorten it for you.")
+        # Reply with a default response if no links are found
+        context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
 
 # Register the link handler
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
 dispatcher.add_handler(link_handler)
+
+
 
 # Start the bot
 updater.start_polling()
