@@ -11,12 +11,17 @@ from shortener import *
 from pyshortner import *
 logger = logging.getLogger(__name__)
 
-extract_link = "https://github.com/manavahir902/Dollerlinksdklink-"
 channel = UPDATE_CHANNEL
 # DKBOTZ 
 ft = f"Due To Overload Only Channel Subscribers can Use the Bot Join - @GreyMatter_Bots"
 
-
+async def extract_link(text):
+    """
+    Extracts links from the given text using a regular expression.
+    """
+    links = re.findall(r'https?://\S+', text)
+    return links
+    
 # Private Chat
 @Client.on_message(filters.private)
 async def private_link_handler(c: Client, message: Message):
