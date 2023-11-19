@@ -1,6 +1,7 @@
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters
 import requests
+import re
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
@@ -40,7 +41,6 @@ def shorten_link(url):
 def handle_messages(update, context):
     chat_id = update.effective_chat.id
     message_text = update.message.text
-    photo_caption = update.message.caption
 
     # Check if the message contains clickable links in Markdown format
     if '[' in message_text and ']' in message_text and '(' in message_text and ')' in message_text:
@@ -57,24 +57,12 @@ def handle_messages(update, context):
 
         # Reply with the updated message
         context.bot.send_message(chat_id=chat_id, text=updated_message, parse_mode=telegram.ParseMode.MARKDOWN)
-    elif photo_caption and '[' in photo_caption and ']' in photo_caption and '(' in photo_caption and ')' in photo_caption:
-        # Check if the photo caption contains clickable links in Markdown format
-        updated_caption = photo_caption
-
-        # Extract and shorten each link in the caption
-        for match in re.finditer(r'\[.*?\]\((.*?)\)', photo_caption):
-            original_link = match.group(1)
-            shortened_link = shorten_link(original_link)
-            
-            if shortened_link:
-                # Replace the old link with the shortened link in the caption
-                updated_caption = updated_caption.replace(f'({original_link})', f'({shortened_link})')
-
-        # Reply with the updated photo and its caption
-        context.bot.send_photo(chat_id=chat_id, photo=update.message.photo[-1].file_id, caption=updated_caption, parse_mode=telegram.ParseMode.MARKDOWN)
+    else:
+        # Reply with a default response if no links are found
+        context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
 
 # Register the handler
-message_handler = MessageHandler(Filters.text | Filters.photo, handle_messages)
+message_handler = MessageHandler(Filters.text, handle_messages)
 dispatcher.add_handler(message_handler)
 
 # Start the bot
