@@ -68,7 +68,7 @@ def handle_links(update, context):
                     shortened_link_with_caption_2 = shortened_link_2
 
                 # Replace the old link with the shortened links in the message
-                updated_message = updated_message.replace(link, f"{shortened_link_with_caption_1} {shortened_link_with_caption_2}")
+                updated_message = updated_message.replace(link, shortened_link_with_caption_1).replace(link, shortened_link_with_caption_2)
 
         # Reply with the updated message
         context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
@@ -76,6 +76,7 @@ def handle_links(update, context):
         # Reply with a default response if no links are found
         context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
 
+    
 # Register the link handler
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
 dispatcher.add_handler(link_handler)
