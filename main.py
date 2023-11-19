@@ -1,60 +1,41 @@
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
-import time
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
-# Replace 'YOUR_API_KEY_1' and 'YOUR_API_KEY_2' with your actual API keys from the two URL shorteners
-API_KEY_1 = '88c17813e37e9c8aadec0deb2ee997b544c34196'
-API_KEY_2 = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
+# Replace 'YOUR_API_KEY' with your actual API key from dollerlinksd.in
+API_KEY = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
 
-def shorten_link(url, api_key, max_retries=3):
-    if api_key == API_KEY_1:
-        api_url = f'https://dollerlinksd.in/api?api={api_key}&url={url}'
-    elif api_key == API_KEY_2:
-        api_url = f'https://adsfly.in/api?api={api_key}&url={url}'
-    else:
-        return None
+def shorten_link(url):
+    api_url = f'https://adsfly.in/api?api={API_KEY}&url={url}'
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
 
-    retries = 0
-    while retries < max_retries:
-        try:
-            response = requests.get(api_url, headers=headers)
-            response.raise_for_status()  # Raise an HTTPError for bad responses
+    try:
+        response = requests.get(api_url, headers=headers)
+        response.raise_for_status()  # Raise an HTTPError for bad responses
 
-            # Parse JSON response and extract the shortened URL
-            shortened_url = response.json().get('shortenedUrl', '')
+        # Parse JSON response and extract the shortened URL
+        shortened_url = response.json().get('shortenedUrl', '')
 
-            return shortened_url
-        except requests.exceptions.HTTPError as errh:
-            print("HTTP Error:", errh)
-        except requests.exceptions.ConnectionError as errc:
-            print("Error Connecting:", errc)
-        except requests.exceptions.Timeout as errt:
-            print("Timeout Error:", errt)
-        except requests.exceptions.RequestException as err:
-            print("Something went wrong:", err)
-
-        # Increment retries and wait exponentially
-        retries += 1
-        wait_time = 2**retries
-        print(f"Retrying in {wait_time} seconds...")
-        time.sleep(wait_time)
-
-    print("Max retries reached. Unable to shorten the link.")
-    return None
-
-# Rest of the code remains unchanged...
-
-
-
+        return shortened_url
+    except requests.exceptions.HTTPError as errh:
+        print("HTTP Error:", errh)
+        return None
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+        return None
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+        return None
+    except requests.exceptions.RequestException as err:
+        print("Something went wrong:", err)
+        return None
 
 def handle_links(update, context):
     chat_id = update.effective_chat.id
@@ -66,22 +47,19 @@ def handle_links(update, context):
     if links_with_captions:
         updated_message = message_text
 
-        # Shorten each link from both services and replace in the message
+        # Shorten each link and replace in the message
         for link, caption in links_with_captions:
-            shortened_link_1 = shorten_link(link, API_KEY_1)
-            shortened_link_2 = shorten_link(link, API_KEY_2)
+            shortened_link = shorten_link(link)
 
-            if shortened_link_1 and shortened_link_2:
-                # If a caption exists, append it to the shortened links
+            if shortened_link:
+                # If a caption exists, append it to the shortened link
                 if caption:
-                    shortened_link_with_caption_1 = f"{shortened_link_1} - {caption}"
-                    shortened_link_with_caption_2 = f"{shortened_link_2} - {caption}"
+                    shortened_link_with_caption = f"{shortened_link} - {caption}"
                 else:
-                    shortened_link_with_caption_1 = shortened_link_1
-                    shortened_link_with_caption_2 = shortened_link_2
+                    shortened_link_with_caption = shortened_link
 
-                # Replace the old link with the shortened links in the message
-                updated_message = updated_message.replace(link, f"{shortened_link_with_caption_1} {shortened_link_with_caption_2}")
+                # Replace the old link with the shortened link in the message
+                updated_message = updated_message.replace(link, shortened_link_with_caption)
 
         # Reply with the updated message
         context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
@@ -89,9 +67,20 @@ def handle_links(update, context):
         # Reply with a default response if no links are found
         context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
 
-# Register the link handler
+def handle_photos(update, context):
+    chat_id = update.effective_chat.id
+    photo_caption = update.message.caption
+    photo_file_id = update.message.photo[-1].file_id
+
+    # Reply with the photo and its caption
+    context.bot.send_photo(chat_id=chat_id, photo=photo_file_id, caption=photo_caption)
+
+# Register the handlers
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
 dispatcher.add_handler(link_handler)
+
+photo_handler = MessageHandler(Filters.photo, handle_photos)
+dispatcher.add_handler(photo_handler)
 
 # Start the bot
 updater.start_polling()
