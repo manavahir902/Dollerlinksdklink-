@@ -1,5 +1,5 @@
 import telegram
-from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, PhotoHandler
+from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
 import time
 
@@ -81,11 +81,7 @@ def handle_links(update, context):
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
 dispatcher.add_handler(link_handler)
 
-# Register a separate handler for photos
-photo_handler = MessageHandler(Filters.photo, handle_links)
-dispatcher.add_handler(photo_handler)
-
-# Rest of the code remains unchanged...
+# Rest of the code remains unchanged..
 
 
 # Start the bot
