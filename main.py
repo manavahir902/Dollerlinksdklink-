@@ -1,8 +1,9 @@
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
+import time
 
-# Replace '6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI' with your actual bot token
+# Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
@@ -28,6 +29,9 @@ def shorten_link(url, api_key):
 
         # Parse JSON response and extract the shortened URL
         shortened_url = response.json().get('shortenedUrl', '')
+
+        # Add a delay of 1 second to avoid rate-limiting
+        time.sleep(1)
 
         return shortened_url
     except requests.exceptions.HTTPError as errh:
@@ -68,7 +72,7 @@ def handle_links(update, context):
                     shortened_link_with_caption_2 = shortened_link_2
 
                 # Replace the old link with the shortened links in the message
-                updated_message = updated_message.replace(link, shortened_link_with_caption_1).replace(link, shortened_link_with_caption_2)
+                updated_message = updated_message.replace(link, f"{shortened_link_with_caption_1} {shortened_link_with_caption_2}")
 
         # Reply with the updated message
         context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
@@ -76,7 +80,6 @@ def handle_links(update, context):
         # Reply with a default response if no links are found
         context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
 
-    
 # Register the link handler
 link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
 dispatcher.add_handler(link_handler)
