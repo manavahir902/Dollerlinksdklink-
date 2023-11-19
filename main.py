@@ -63,7 +63,7 @@ def handle_links(update, context):
                 updated_message = updated_message.replace(link, shortened_link_with_caption)
 
         # Reply with the updated message
-        context.bot.send_message(chat_id=chat_id, text=f"Updated message:\n{updated_message}")
+        context.bot.send_message(chat_id=chat_id, text=f"{updated_message}")
     else:
         # Reply with a default response if no links are found
         context.bot.send_message(chat_id=chat_id, text="Hello! If you send links, I'll try to shorten them for you.")
