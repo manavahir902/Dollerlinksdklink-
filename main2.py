@@ -13,9 +13,9 @@ def start(update, context):
     if context.args:
         url = context.args[0]
 
-        # Fetch the JSON content of the provided link
+        # Fetch the JSON content of the provided link with a user-agent
         try:
-            response = requests.get(url)
+            response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'})
             response.raise_for_status()
 
             # Parse JSON content
@@ -35,3 +35,4 @@ dispatcher.add_handler(start_handler)
 # Start the bot
 updater.start_polling()
 updater.idle()
+
