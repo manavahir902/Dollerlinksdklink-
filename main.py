@@ -13,12 +13,8 @@ API_KEY = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
 def shorten_link(url):
     api_url = f'https://adsfly.in/api?api={API_KEY}&url={url}'
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-
     try:
-        response = requests.get(api_url, headers=headers)
+        response = requests.get(api_url)
         response.raise_for_status()  # Raise an HTTPError for bad responses
 
         # Parse JSON response and extract the shortened URL
@@ -39,6 +35,10 @@ def shorten_link(url):
         return None
 
 # Rest of the code remains unchanged...
+
+
+
+
 
 
 def start(update, context):
