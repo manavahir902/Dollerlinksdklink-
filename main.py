@@ -18,18 +18,17 @@ REQUEST_DELAY = 5
 
 
 def shorten_link(url):
-    api_url = '/api'
-    params = f'?api={API_KEY}&url={url}'
+    api_url = f'/api?api={API_KEY}&url={url}'
 
     try:
         # Create an HTTP connection to the adsfly.in server
         conn = http.client.HTTPSConnection('adsfly.in')
-        
+
         # Introduce a delay before the request
         time.sleep(REQUEST_DELAY)
 
         # Send a POST request to the API endpoint
-        conn.request("POST", api_url + params)
+        conn.request("POST", api_url)
 
         # Get the response from the server
         response = conn.getresponse()
@@ -39,7 +38,7 @@ def shorten_link(url):
             shortened_url = response.read().decode('utf-8')
             return shortened_url
         else:
-            print("HTTP Error:", response.status)
+            print(f"HTTP Error {response.status}: {response.reason}")
             return None
     except Exception as e:
         print("Something went wrong:", e)
@@ -47,6 +46,7 @@ def shorten_link(url):
     finally:
         # Close the connection
         conn.close() if conn else None
+
 
 
 
