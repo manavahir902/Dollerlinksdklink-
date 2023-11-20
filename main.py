@@ -22,6 +22,7 @@ def shorten_link(url):
         time.sleep(REQUEST_DELAY)
 
         response = requests.get(api_url)
+        response.raise_for_status()
         # Raise an HTTPError for bad responses
 
         # Parse JSON response and extract the shortened URL
@@ -46,6 +47,8 @@ def start(update, context):
 
     # Send a welcome message
     context.bot.send_message(chat_id=chat_id, text="Hello! I'm your link shortening bot. Send me a link, and I'll shorten it for you.")
+    context.bot.send_message(chat_id=chat_id, text=f" {API_KEY} Hello! I'm your link shortening bot. Send me a link, and I'll shorten it for you.")
+
 
 # Register the start command handler
 start_handler = CommandHandler('start', start)
