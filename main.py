@@ -15,7 +15,7 @@ API_KEY = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
 REQUEST_DELAY = 5
 
 def shorten_link(url):
-    url = f'https://adsfly.in/api'
+    api_url = f'https://adsfly.in/api'
     params = {
         'api': API_KEY,
         'url': url
