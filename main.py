@@ -23,6 +23,7 @@ headers = {
 
 
 
+
 def shorten_link(url):
     api_url = f'https://adsfly.in/api?api={API_KEY}&url={urllib.parse.quote(url)}'
 
@@ -30,20 +31,29 @@ def shorten_link(url):
         # Introduce a delay before the request
         time.sleep(REQUEST_DELAY)
 
+        # Parse the URL to get host and path
+        parsed_url = urllib.parse.urlparse(api_url)
+        connection = http.client.HTTPSConnection(parsed_url.netloc)
+
         # Send a GET request
-        with urllib.request.urlopen(api_url) as response:
-            if response.getcode() == 200:
-                # Parse JSON response and extract the shortened URL
-                shortened_url = response.read().decode('utf-8')
-                return shortened_url
-            else:
-                print(f"HTTP Error: {response.getcode()}")
-                return None
+        connection.request("GET", parsed_url.path + '?' + parsed_url.query)
+
+        # Get the response
+        response = connection.getresponse()
+
+        if response.status == 200:
+            # Parse JSON response and extract the shortened URL
+            shortened_url = response.read().decode('utf-8')
+            return shortened_url
+        else:
+            print(f"HTTP Error: {response.status}")
+            return None
     except Exception as e:
         print(f"Something went wrong: {e}")
         return None
 
 # Rest of the code remains unchanged...
+
 
 
 
