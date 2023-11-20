@@ -3,6 +3,7 @@ import telegram
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
 import time
+import http.client
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
@@ -14,36 +15,39 @@ API_KEY = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
 # Add a delay (in seconds) before each request to Adsfly.in
 REQUEST_DELAY = 5
 
+
+
 def shorten_link(url):
-    api_url = f'https://adsfly.in/api'
-    params = {
-        'api': API_KEY,
-        'url': url
-    }
+    api_url = '/api'
+    params = f'?api={API_KEY}&url={url}'
 
     try:
+        # Create an HTTP connection to the adsfly.in server
+        conn = http.client.HTTPSConnection('adsfly.in')
+        
         # Introduce a delay before the request
         time.sleep(REQUEST_DELAY)
 
-        response = requests.post(api_url, params=params)
-        response.raise_for_status()
+        # Send a POST request to the API endpoint
+        conn.request("POST", api_url + params)
 
-        # Include the entire API response in the shortened_url variable
-        shortened_url = response.text
+        # Get the response from the server
+        response = conn.getresponse()
 
-        return shortened_url
-    except requests.exceptions.HTTPError as errh:
-        print("HTTP Error:", errh)
+        if response.status == 200:
+            # Include the entire API response in the shortened_url variable
+            shortened_url = response.read().decode('utf-8')
+            return shortened_url
+        else:
+            print("HTTP Error:", response.status)
+            return None
+    except Exception as e:
+        print("Something went wrong:", e)
         return None
-    except requests.exceptions.ConnectionError as errc:
-        print("Error Connecting:", errc)
-        return None
-    except requests.exceptions.Timeout as errt:
-        print("Timeout Error:", errt)
-        return None
-    except requests.exceptions.RequestException as err:
-        print("Something went wrong:", err)
-        return None
+    finally:
+        # Close the connection
+        conn.close() if conn else None
+
 
 
 def start(update, context):
