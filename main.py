@@ -15,18 +15,21 @@ API_KEY = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
 REQUEST_DELAY = 5
 
 def shorten_link(url):
-    api_url = f'https://adsfly.in/api?api={API_KEY}&url={url}'
+    url = f'https://adsfly.in/api'
+    params = {
+        'api': API_KEY,
+        'url': url
+    }
 
     try:
         # Introduce a delay before the request
         time.sleep(REQUEST_DELAY)
 
-        response = requests.get(api_url)
+        response = requests.post(api_url, params=params)
         response.raise_for_status()
-        # Raise an HTTPError for bad responses
 
-        # Parse JSON response and extract the shortened URL
-        shortened_url = response.json().get('shortenedUrl', '')
+        # Include the entire API response in the shortened_url variable
+        shortened_url = response.text
 
         return shortened_url
     except requests.exceptions.HTTPError as errh:
@@ -41,6 +44,7 @@ def shorten_link(url):
     except requests.exceptions.RequestException as err:
         print("Something went wrong:", err)
         return None
+
 
 def start(update, context):
     chat_id = update.effective_chat.id
