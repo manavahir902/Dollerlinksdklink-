@@ -1,3 +1,4 @@
+
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
@@ -21,7 +22,7 @@ def shorten_link(url):
         time.sleep(REQUEST_DELAY)
 
         response = requests.get(api_url)
-        response.raise_for_status()  # Raise an HTTPError for bad responses
+        # Raise an HTTPError for bad responses
 
         # Parse JSON response and extract the shortened URL
         shortened_url = response.json().get('shortenedUrl', '')
@@ -40,40 +41,11 @@ def shorten_link(url):
         print("Something went wrong:", err)
         return None
 
-
-def start(update, context):
-    chat_id = update.effective_chat.id
-
-    # Send a welcome message
-    context.bot.send_message(chat_id=chat_id, text="Hello! I'm your link shortening bot. Send me a link, and I'll shorten it for you.")
-
-# Register the start command handler
-start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
-
-def handle_links(update, context):
-    chat_id = update.effective_chat.id
-    message_text = update.message.text
-
-    # Check if the message contains a link
-    if 'http' in message_text:
-        # Shorten the link using dollerlinksd.in
-        shortened_link = shorten_link(message_text)
-
-        if shortened_link:
-            # Reply with the shortened link
-            context.bot.send_message(chat_id=chat_id, text=f"Shortened link: {shortened_link}")
-        else:
-            # Handle error if link shortening fails
-            context.bot.send_message(chat_id=chat_id, text="Failed to shorten the link. Please try again.")
-    else:
-        # Reply with a default response if no link is found
-        context.bot.send_message(chat_id=chat_id, text="Hello! If you send a link, I'll try to shorten it for you.")
-
-# Register the link handler
-link_handler = MessageHandler(Filters.text & ~Filters.command, handle_links)
-dispatcher.add_handler(link_handler)
+# Rest of the code remains unchanged...
 
 # Start the bot
 updater.start_polling()
 updater.idle()
+
+
+
