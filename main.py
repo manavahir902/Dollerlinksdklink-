@@ -7,13 +7,19 @@ import time
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
 dispatcher = updater.dispatcher
 
-# Replace 'YOUR_API_KEY' with your actual API key from dollerlinksd.in
+# Replace 'YOUR_API_KEY' with your actual API key from adsfly.in
 API_KEY = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
+
+# Add a delay (in seconds) before each request to Adsfly.in
+REQUEST_DELAY = 5
 
 def shorten_link(url):
     api_url = f'https://adsfly.in/api?api={API_KEY}&url={url}'
 
     try:
+        # Introduce a delay before the request
+        time.sleep(REQUEST_DELAY)
+
         response = requests.get(api_url)
         response.raise_for_status()  # Raise an HTTPError for bad responses
 
@@ -33,12 +39,6 @@ def shorten_link(url):
     except requests.exceptions.RequestException as err:
         print("Something went wrong:", err)
         return None
-
-# Rest of the code remains unchanged...
-
-
-
-
 
 
 def start(update, context):
