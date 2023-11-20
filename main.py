@@ -39,6 +39,8 @@ def shorten_link(url):
             return shortened_url
         else:
             print(f"HTTP Error {response.status}: {response.reason}")
+            # Print the response body for additional details
+            print(response.read().decode('utf-8'))
             return None
     except Exception as e:
         print("Something went wrong:", e)
@@ -46,6 +48,7 @@ def shorten_link(url):
     finally:
         # Close the connection
         conn.close() if conn else None
+
 
 
 
