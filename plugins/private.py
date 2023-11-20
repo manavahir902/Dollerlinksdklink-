@@ -9,7 +9,7 @@ from pyrogram.errors.exceptions.bad_request_400 import *
 import shortener
 from shortener import *
 from pyshortner import *
-from pyshortnersdk import Shortener  # Add this import for the new shortener library
+from pyshortner import Shortener  # Add this import for the new shortener library
 import re
 
 logger = logging.getLogger(__name__)
