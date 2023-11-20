@@ -4,6 +4,8 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
 import time
 import http.client
+import urllib.request
+import urllib.parse
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
 updater = Updater(token='6780752261:AAGH5NiObh6bUCzbniQ61q0XmafQVDNQRqI', use_context=True)
@@ -20,37 +22,28 @@ headers = {
 }
 
 
+
 def shorten_link(url):
-    api_url = f'/api?api={API_KEY}&url={url}'
+    api_url = f'https://adsfly.in/api?api={API_KEY}&url={urllib.parse.quote(url)}'
 
     try:
-        # Create an HTTP connection to the adsfly.in server
-        conn = http.client.HTTPSConnection('adsfly.in')
-
         # Introduce a delay before the request
         time.sleep(REQUEST_DELAY)
 
-        # Send a POST request to the API endpoint
-        conn.request("POST", api_url)
-
-        # Get the response from the server
-        response = conn.getresponse()
-
-        if response.status == 200:
-            # Include the entire API response in the shortened_url variable
-            shortened_url = response.read().decode('utf-8')
-            return shortened_url
-        else:
-            print(f"HTTP Error {response.status}: {response.reason}")
-            # Print the response body for additional details
-            print(response.read().decode('utf-8'))
-            return None
+        # Send a GET request
+        with urllib.request.urlopen(api_url) as response:
+            if response.getcode() == 200:
+                # Parse JSON response and extract the shortened URL
+                shortened_url = response.read().decode('utf-8')
+                return shortened_url
+            else:
+                print(f"HTTP Error: {response.getcode()}")
+                return None
     except Exception as e:
-        print("Something went wrong:", e)
+        print(f"Something went wrong: {e}")
         return None
-    finally:
-        # Close the connection
-        conn.close() if conn else None
+
+# Rest of the code remains unchanged...
 
 
 
