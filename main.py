@@ -15,6 +15,10 @@ API_KEY = 'fd1a97fe23c350f2d1ae48b40d6d91313dd89eee'
 # Add a delay (in seconds) before each request to Adsfly.in
 REQUEST_DELAY = 5
 
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+}
+response = requests.get(api_url, headers=headers)
 
 
 def shorten_link(url):
