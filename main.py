@@ -29,7 +29,7 @@ if __name__ == "__main__":
     from telegram.ext import Updater
 
     # Replace 'YOUR_BOT_TOKEN' with your actual bot token
-    updater = Updater(token='YOUR_BOT_TOKEN', use_context=True)
+    updater = Updater(token='6953684028:AAH05qBOMyeP9w3o5vNv-P7wgH0L-D9C47M', use_context=True)
 
     dp = updater.dispatcher
 
